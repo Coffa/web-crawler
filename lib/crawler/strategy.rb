@@ -6,6 +6,8 @@ module Crawler
 		end
 
 		module ClassMethods
+			MAX_FORWARD = 3
+
 			def default_options
 				return @default_options if instance_variable_defined?(:@default_options) && @default_options
 				@default_options = superclass.respond_to?(:default_options) ? superclass.default_options : {}
@@ -34,6 +36,28 @@ module Crawler
 			def parse(curl); end
 
 			def behavior(curl); end
+
+			def forward_link(curl, url)
+				if forward? curl
+					curl.instance = url
+					curl.parser = self
+					curl.async.add_entry(curl)
+					curl.async.perform
+				end
+				raise StopFlowError
+			end
+
+			def string_to_i(str)
+				str.gsub(/[^\d]/, '').to_i
+			end
+
+			private
+			def forward?(curl)
+				number_of_forward = curl.instance_variable_get(:@number_of_forward).to_i
+				number_of_forward += 1
+				curl.instance_variable_set(:@number_of_forward, number_of_forward)
+				MAX_FORWARD > number_of_forward
+			end
 		end
 
 		module InstanceMethods

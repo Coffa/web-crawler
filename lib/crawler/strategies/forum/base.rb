@@ -3,9 +3,7 @@ module Crawler
 		class Forum
 			include Crawler::Strategy
 
-			MAX_FORWARD = 3
-
-			option :prority, :low
+			option :priority, :low
 
 			class << self
 				def behavior(curl, behavior=:update)
@@ -27,14 +25,14 @@ module Crawler
 					url.start_with?('http') ? url : base_url(curl) + url
 				end
 
-				def forward_link(curl, url)
-					if forward? curl
-						curl.instance = url
-						curl.parser = self
-						curl.async.add_entry(curl)
-						curl.async.perform
+				def parse(curl, node_first, node_last)
+					begin
+						get_info_first_link(curl, node_first) unless curl.behavior == :update || curl.parser_data.present?
+						navigation_last(curl)
+						get_info_last_link(curl, node_last)
+					rescue StopFlowError
+						return
 					end
-					raise StopFlowError
 				end
 
 				def get_info_first_link(curl, node=nil)
@@ -76,14 +74,6 @@ module Crawler
 					else
 						super(name, *args, &block)
 					end
-				end
-
-				private
-				def forward?(curl)
-					number_of_forward = curl.instance_variable_get(:@number_of_forward).to_i
-					number_of_forward += 1
-					curl.instance_variable_set(:@number_of_forward, number_of_forward)
-					MAX_FORWARD > number_of_forward
 				end
 			end
 		end

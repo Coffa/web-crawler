@@ -8,13 +8,9 @@ module Crawler
 				end
 
 				def parse(curl)
-					begin
-						get_info_first_link(curl, curl.html.at_css('li[id^=post_]:first')) unless curl.behavior == :update || curl.parser_data.present?
-						navigation_last(curl)
-						get_info_last_link(curl, curl.html.at_css('li[id^=post_]:last'))
-					rescue StopFlowError
-						return
-					end
+					node_first = curl.html.at_css('li[id^=post_]:first')
+					node_last = curl.html.at_css('li[id^=post_]:last')
+					super(curl, node_first, node_last)
 				end
 
 				def title(curl)

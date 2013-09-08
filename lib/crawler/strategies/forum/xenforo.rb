@@ -1,19 +1,16 @@
 module Crawler
 	module Strategies
-		class Discuz < Forum
+		class Xenforo < Forum
 			class << self
 				def check(curl)
-					return false
+					!!curl.url.index('/threads/') && curl.html.root[:id] == 'XenForo'
 				end
 
 				def parse(curl)
-					begin
-						get_info_first_link(curl, curl.html.at_css('ol#messageList:first > li:first')) unless curl.behavior == :update || curl.parser_data.present?
-						navigation_last(curl)
-						get_info_last_link(curl, curl.html.at_css('ol#messageList:first > li:last'))
-					rescue StopFlowError
-						return
-					end
+					tag_posts = curl.html.at_css('ol#messageList:first')
+					node_first = tag_posts.at_css('> li:first')
+					node_last = tag_posts.at_css('> li:last')
+					super(curl, node_first, node_last)
 				end
 
 				def poster(curl, node)
@@ -58,4 +55,4 @@ module Crawler
 	end
 end
 
-Crawler.add_strategy(Crawler::Strategies::Discuz)
+Crawler.add_strategy(Crawler::Strategies::Xenforo)

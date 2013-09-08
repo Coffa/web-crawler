@@ -8,7 +8,8 @@ module Crawler
 
 	autoload :Strategy, 'crawler/strategy'
 	autoload :Configuration, 'crawler/configuration.rb'
-	autoload :Forum, 'crawler/strategies/forums/base'
+	autoload :Forum, 'crawler/strategies/forum/base'
+	autoload :Video, 'crawler/strategies/video/base'
 
 	class << self
 		def strategies
@@ -50,6 +51,7 @@ module Crawler
 	end
 
 	module Strategies
-		Dir.glob("#{File.dirname(__FILE__)}/crawler/strategies/forums/*", &method(:require))
+		Dir.glob("#{File.dirname(__FILE__)}/crawler/strategies/*.rb", &method(:require))
+		Dir.glob("#{File.dirname(__FILE__)}/crawler/strategies/*/*.rb", &method(:require))
 	end
 end
