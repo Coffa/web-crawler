@@ -5,12 +5,6 @@ describe Crawler::Configuration do
 		expect(Crawler::Configuration.defaults).to be_kind_of(Hash)
 	end
 
-	it 'is callable from .configure' do
-		Crawler.configure do |c|
-			expect(c).to be_kind_of(Crawler::Configuration)
-		end
-	end
-
 	it 'is able to set value' do
 		Crawler.configure do |c|
 			c.curl_easy[:follow_location] = false

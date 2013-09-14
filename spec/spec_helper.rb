@@ -21,3 +21,8 @@ RSpec.configure do |config|
   #     --seed 1234
   config.order = 'random'
 end
+
+class ExampleStrategy
+  include Crawler::Strategy
+  @MAX_FORWARD = 3
+end

@@ -2,13 +2,8 @@ require "spec_helper"
 
 describe Crawler do
 	describe '.strategies' do
-		it 'increases when a new strategy is made' do
-			expect {
-				class Example
-					include Crawler::Strategy
-				end
-			}.to change(Crawler.strategies, :size).by(1)
-		end
+		let(:strategies) { Crawler.strategies }
+		specify { expect(strategies.keys).to eq([:high, :medium, :low]) }
 	end
 
 	describe '.add_strategy' do
@@ -19,13 +14,23 @@ describe Crawler do
 		end
 
 		let(:strategies) { Crawler.strategies }
-		specify { expect(strategies).to have_key(:low) }
-		specify { expect(strategies).to have_key(:medium) }
-		specify { expect(strategies).to have_value([Module, Object]) }
-		specify { expect(strategies).to have_value([Class]) }
+		specify { expect(strategies[:low]).to include(*[Module, Object]) }
+		specify { expect(strategies[:medium]).to include(*[Class]) }
 	end
 
-	describe '.get' do
+	context 'configuration' do
+	  it 'is a instance of Configuration' do
+	  	Crawler.configure do |config|
+	  		expect(config).to be_kind_of(Crawler::Configuration)
+	  	end
+	  end
+	end
 
+	describe '.set_config' do
+		subject(:curl) do
+			curl = ::Curl::Easy.new
+	  	Crawler.set_config(curl, {:timeout => 20})
+		end
+	  its(:timeout) { should eq(20)}
 	end
 end
