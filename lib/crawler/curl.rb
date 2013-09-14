@@ -6,8 +6,9 @@ module Crawler
 		SUCCESS = 'success'
 		FAILURE = 'failure'
 
-		attr_accessor :parser_data, :async
+		attr_accessor :parser_data
 		attr_reader :callbacks, :parser, :behavior
+		attr_writer :async
 
 		def_delegators :@obj, :useragent, :max_redirects, :timeout, :autoreferer,
 													:follow_location, :body_str
@@ -43,7 +44,7 @@ module Crawler
 		end
 
 		def perform
-			Crawler::Async.new.add_entry(self) if @async.blank?
+			create_async if @async.blank?
 			@async.perform
 		end
 
@@ -53,8 +54,13 @@ module Crawler
 			set_callbacks
 		end
 
+		def async
+			create_async if @async.blank?
+			@async
+		end
+
 		def parser=(p)
-			(p <= Crawler::Strategy) ? @parse = p : raise(TypeError)
+			p.include?(Crawler::Strategy) ? @parser = p : raise(TypeError)
 		end
 
 		def behavior=(b)
@@ -79,6 +85,11 @@ module Crawler
 			end
 		end
 
+		def create_async
+			@async = Crawler::Async.new
+			@async.add_entry(self)
+		end
+
 		def parse
 			@parser.present? ? @parser.parse(self) : Crawler.parse(self)
 		end
@@ -86,9 +97,7 @@ module Crawler
 		def set_callbacks
 			Crawler::Curl::CALLBACK.each_with_index do |cb_name, index|
 				proc = create_proc(@callbacks[index], index)
-				if proc.present?
-					instance.send("#{cb_name}", &proc)
-				end
+				instance.send("#{cb_name}", &proc) if proc.present?
 			end
 		end
 	end

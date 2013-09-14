@@ -2,12 +2,15 @@ require 'curb'
 require 'nokogiri'
 require 'chronic'
 require 'crawler/version'
+require 'active_support/core_ext/object/blank'
 
 module Crawler
 	STRATEGIES = [:high, :medium, :low]
 
 	autoload :Strategy, 'crawler/strategy'
 	autoload :Configuration, 'crawler/configuration.rb'
+	autoload :Curl, 'crawler/curl'
+	autoload :Async, 'crawler/async'
 	autoload :Forum, 'crawler/strategies/forum/base'
 	autoload :Video, 'crawler/strategies/video/base'
 
@@ -17,7 +20,7 @@ module Crawler
 		end
 
 		def add_strategy(base, priority=nil)
-			priority = base.priority if priority.blank?
+			priority = base.priority unless !!priority
 			strategies[priority] << base unless strategies[priority].include? base
 		end
 
@@ -43,6 +46,7 @@ module Crawler
 
 		def set_config(obj, opts)
 			opts.each_pair {|k, v| obj.send("#{k}=", v)}
+			obj
 		end
 	end
 

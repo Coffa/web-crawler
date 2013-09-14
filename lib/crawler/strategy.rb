@@ -6,7 +6,6 @@ module Crawler
 		end
 
 		module ClassMethods
-			MAX_FORWARD = 3
 
 			def default_options
 				return @default_options if instance_variable_defined?(:@default_options) && @default_options
@@ -17,6 +16,14 @@ module Crawler
 				default_options[name] = value
 			end
 
+			def configure(options=nil)
+        if block_given?
+          yield default_options
+        else
+          default_options.merge!(options)
+        end
+      end
+
 			def priority
 				Crawler::STRATEGIES.include?(default_options[:priority]) ? default_options[:priority] : :medium
 			end
@@ -24,7 +31,7 @@ module Crawler
 			def get(url)
 				curl = Crawler::Curl.new(url)
 				curl.perform
-				parse(curl)
+				curl
 			end
 
 			def screenshot(url)
@@ -41,8 +48,9 @@ module Crawler
 				if forward? curl
 					curl.instance = url
 					curl.parser = self
-					curl.async.add_entry(curl)
-					curl.async.perform
+					curl.perform
+				else
+					raise ManyForwardError
 				end
 				raise StopFlowError
 			end
@@ -56,7 +64,7 @@ module Crawler
 				number_of_forward = curl.instance_variable_get(:@number_of_forward).to_i
 				number_of_forward += 1
 				curl.instance_variable_set(:@number_of_forward, number_of_forward)
-				MAX_FORWARD > number_of_forward
+				(@MAX_FORWARD || 3) > number_of_forward
 			end
 		end
 

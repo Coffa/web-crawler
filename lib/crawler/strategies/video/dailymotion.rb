@@ -41,3 +41,4 @@ module Crawler
 end
 
 Crawler.add_strategy(Crawler::Strategies::DailyMotion)
+
