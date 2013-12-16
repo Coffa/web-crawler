@@ -12,12 +12,6 @@ describe Crawler::Curl do
   	end
   end
 
-  describe '.html' do
-  	it 'has Nokogiri type' do
-  	  expect(curl.html).to be_an(Nokogiri::HTML::Document)
-  	end
-  end
-
   describe '.instance' do
     it 'has Curl::Easy type' do
       expect(curl.instance).to be_an(::Curl::Easy)
@@ -31,7 +25,37 @@ describe Crawler::Curl do
     end
 
     it 'same callback' do
-      curl.callbacks = []
+      expect(curl.callbacks).to have(0).items
+    end
+  end
+
+  describe '.html' do
+  	it 'has Nokogiri type' do
+  	  expect(curl.html).to be_an(Nokogiri::HTML::Document)
+  	end
+  end
+
+  describe '.url' do
+    it 'forward to www.google.com' do
+      curl.perform
+      expect(curl.url).to start_with('http://www.google.com.vn/')
+    end
+  end
+
+  describe '.callbacks=' do
+    it 'raise TypeError' do
+      expect {
+        curl.callbacks = ["mquy"]
+        }.to raise_error(TypeError)
+    end
+
+    it 'set one callback' do
+      class C
+        def x; end
+      end
+      callbacks = [C.new.method(:x)]
+      curl.callbacks = callbacks
+      expect(curl.callbacks).to eq(callbacks)
     end
   end
 
@@ -55,11 +79,6 @@ describe Crawler::Curl do
   end
 
   context 'state: perform' do
-	  describe '.url' do
-	    it 'forward to www.google.com' do
-	    	curl.perform
-	    	expect(curl.url).to start_with('http://www.google.com.vn/')
-	    end
-	  end
+
   end
 end
